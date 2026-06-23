@@ -30,16 +30,41 @@ npm install
 npm run build
 ```
 
+## First-time setup
+
+If you don't have a Web API key yet (or aren't sure where to find one), run:
+
+```bash
+npm run setup
+```
+
+The setup CLI will:
+
+1. Point you at the [sign-up page](https://retroachievements.org/createaccount.php)
+   if you don't have a RetroAchievements account.
+2. Ask for your username.
+3. Point you at the [control panel](https://retroachievements.org/controlpanel.php)
+   to copy your Web API key.
+4. Verify the credentials against the API.
+5. Write them to `.env` in the project root.
+
+If you already have a key, you can skip the script and configure manually instead.
+
 ## Configure
 
-Set two environment variables before launching the server:
+The server reads two environment variables at startup:
 
 | Variable      | Value                                                                |
 | ------------- | -------------------------------------------------------------------- |
 | `RA_USERNAME` | Your RetroAchievements username.                                     |
-| `RA_API_KEY`  | Your RetroAchievements Web API key (from the Settings page).         |
+| `RA_API_KEY`  | Your Web API key (find it at https://retroachievements.org/controlpanel.php). |
 
-A `.env.example` is included as a template — copy it to `.env` for local dev.
+A `.env.example` is included as a template — copy it to `.env` for local dev, or
+pass the values as `env` entries in your MCP client config (see below).
+
+If you launch the server without these set, it will still start and respond
+to MCP clients — but every tool call returns a friendly error explaining how
+to finish setup. This means a missing key never silently bricks the connection.
 
 ## Use with Claude Code
 

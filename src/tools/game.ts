@@ -1,10 +1,10 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { AuthObject } from "@retroachievements/api";
 import { getGame, getGameExtended } from "@retroachievements/api";
+import { getAuth } from "../auth.js";
 import { safeCall } from "../util.js";
 
-export function registerGameTools(server: McpServer, auth: AuthObject): void {
+export function registerGameTools(server: McpServer): void {
   server.registerTool(
     "ra_game",
     {
@@ -15,7 +15,7 @@ export function registerGameTools(server: McpServer, auth: AuthObject): void {
         gameId: z.number().int().positive().describe("RetroAchievements game ID"),
       },
     },
-    async ({ gameId }) => safeCall(() => getGame(auth, { gameId }))
+    async ({ gameId }) => safeCall(() => getGame(getAuth(), { gameId }))
   );
 
   server.registerTool(
@@ -34,7 +34,7 @@ export function registerGameTools(server: McpServer, auth: AuthObject): void {
     },
     async ({ gameId, isRequestingUnofficialAchievements }) =>
       safeCall(() =>
-        getGameExtended(auth, { gameId, isRequestingUnofficialAchievements })
+        getGameExtended(getAuth(), { gameId, isRequestingUnofficialAchievements })
       )
   );
 }

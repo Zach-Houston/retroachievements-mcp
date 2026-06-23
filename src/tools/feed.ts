@@ -1,12 +1,12 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { AuthObject } from "@retroachievements/api";
 import {
   getAchievementOfTheWeek,
   getTopTenUsers,
 } from "@retroachievements/api";
+import { getAuth } from "../auth.js";
 import { safeCall } from "../util.js";
 
-export function registerFeedTools(server: McpServer, auth: AuthObject): void {
+export function registerFeedTools(server: McpServer): void {
   server.registerTool(
     "ra_achievement_of_the_week",
     {
@@ -15,7 +15,7 @@ export function registerFeedTools(server: McpServer, auth: AuthObject): void {
         "The currently featured achievement-of-the-week, plus the leaderboard of users who have already unlocked it.",
       inputSchema: {},
     },
-    async () => safeCall(() => getAchievementOfTheWeek(auth))
+    async () => safeCall(() => getAchievementOfTheWeek(getAuth()))
   );
 
   server.registerTool(
@@ -25,6 +25,6 @@ export function registerFeedTools(server: McpServer, auth: AuthObject): void {
       description: "The site's current top-ten ranked users by hardcore points.",
       inputSchema: {},
     },
-    async () => safeCall(() => getTopTenUsers(auth))
+    async () => safeCall(() => getTopTenUsers(getAuth()))
   );
 }

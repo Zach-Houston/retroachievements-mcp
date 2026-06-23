@@ -1,4 +1,5 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { MissingCredentialsError } from "./auth.js";
 
 export function jsonResult(data: unknown): CallToolResult {
   return {
@@ -7,6 +8,12 @@ export function jsonResult(data: unknown): CallToolResult {
 }
 
 export function errorResult(err: unknown): CallToolResult {
+  if (err instanceof MissingCredentialsError) {
+    return {
+      isError: true,
+      content: [{ type: "text", text: MissingCredentialsError.helpText() }],
+    };
+  }
   const message = err instanceof Error ? err.message : String(err);
   return {
     isError: true,

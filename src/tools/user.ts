@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { AuthObject } from "@retroachievements/api";
 import {
   getUserProfile,
   getUserSummary,
@@ -10,9 +9,10 @@ import {
   getUserAwards,
   getAchievementsEarnedBetween,
 } from "@retroachievements/api";
+import { getAuth } from "../auth.js";
 import { safeCall } from "../util.js";
 
-export function registerUserTools(server: McpServer, auth: AuthObject): void {
+export function registerUserTools(server: McpServer): void {
   server.registerTool(
     "ra_user_profile",
     {
@@ -23,7 +23,7 @@ export function registerUserTools(server: McpServer, auth: AuthObject): void {
         username: z.string().describe("RetroAchievements username"),
       },
     },
-    async ({ username }) => safeCall(() => getUserProfile(auth, { username }))
+    async ({ username }) => safeCall(() => getUserProfile(getAuth(), { username }))
   );
 
   server.registerTool(
@@ -52,7 +52,7 @@ export function registerUserTools(server: McpServer, auth: AuthObject): void {
     },
     async ({ username, recentGamesCount, recentAchievementsCount }) =>
       safeCall(() =>
-        getUserSummary(auth, {
+        getUserSummary(getAuth(), {
           username,
           recentGamesCount,
           recentAchievementsCount,
@@ -77,7 +77,9 @@ export function registerUserTools(server: McpServer, auth: AuthObject): void {
       },
     },
     async ({ username, recentMinutes }) =>
-      safeCall(() => getUserRecentAchievements(auth, { username, recentMinutes }))
+      safeCall(() =>
+        getUserRecentAchievements(getAuth(), { username, recentMinutes })
+      )
   );
 
   server.registerTool(
@@ -99,7 +101,9 @@ export function registerUserTools(server: McpServer, auth: AuthObject): void {
       },
     },
     async ({ username, count, offset }) =>
-      safeCall(() => getUserRecentlyPlayedGames(auth, { username, count, offset }))
+      safeCall(() =>
+        getUserRecentlyPlayedGames(getAuth(), { username, count, offset })
+      )
   );
 
   server.registerTool(
@@ -115,7 +119,9 @@ export function registerUserTools(server: McpServer, auth: AuthObject): void {
       },
     },
     async ({ username, count, offset }) =>
-      safeCall(() => getUserCompletionProgress(auth, { username, count, offset }))
+      safeCall(() =>
+        getUserCompletionProgress(getAuth(), { username, count, offset })
+      )
   );
 
   server.registerTool(
@@ -128,7 +134,7 @@ export function registerUserTools(server: McpServer, auth: AuthObject): void {
         username: z.string().describe("RetroAchievements username"),
       },
     },
-    async ({ username }) => safeCall(() => getUserAwards(auth, { username }))
+    async ({ username }) => safeCall(() => getUserAwards(getAuth(), { username }))
   );
 
   server.registerTool(
@@ -147,7 +153,7 @@ export function registerUserTools(server: McpServer, auth: AuthObject): void {
     },
     async ({ username, fromDate, toDate }) =>
       safeCall(() =>
-        getAchievementsEarnedBetween(auth, {
+        getAchievementsEarnedBetween(getAuth(), {
           username,
           fromDate: new Date(fromDate),
           toDate: new Date(toDate),

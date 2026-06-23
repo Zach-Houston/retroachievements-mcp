@@ -5,12 +5,14 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "retroachievements-mcp": "dist/index.js"
+    "retroachievements-mcp": "dist/index.js",
+    "retroachievements-mcp-setup": "dist/setup.js"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
+    "setup": "tsx src/setup.ts",
     "prepare": "npm run build"
   },
   "files": [
