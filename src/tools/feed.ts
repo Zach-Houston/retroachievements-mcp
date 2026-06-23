@@ -15,7 +15,7 @@ export function registerFeedTools(server: McpServer): void {
         "The currently featured achievement-of-the-week, plus the leaderboard of users who have already unlocked it.",
       inputSchema: {},
     },
-    async () => safeCall(() => getAchievementOfTheWeek(getAuth()))
+    async () => safeCall(async () => getAchievementOfTheWeek(await getAuth()))
   );
 
   server.registerTool(
@@ -25,6 +25,6 @@ export function registerFeedTools(server: McpServer): void {
       description: "The site's current top-ten ranked users by hardcore points.",
       inputSchema: {},
     },
-    async () => safeCall(() => getTopTenUsers(getAuth()))
+    async () => safeCall(async () => getTopTenUsers(await getAuth()))
   );
 }

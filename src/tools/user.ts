@@ -23,7 +23,8 @@ export function registerUserTools(server: McpServer): void {
         username: z.string().describe("RetroAchievements username"),
       },
     },
-    async ({ username }) => safeCall(() => getUserProfile(getAuth(), { username }))
+    async ({ username }) =>
+      safeCall(async () => getUserProfile(await getAuth(), { username }))
   );
 
   server.registerTool(
@@ -51,8 +52,8 @@ export function registerUserTools(server: McpServer): void {
       },
     },
     async ({ username, recentGamesCount, recentAchievementsCount }) =>
-      safeCall(() =>
-        getUserSummary(getAuth(), {
+      safeCall(async () =>
+        getUserSummary(await getAuth(), {
           username,
           recentGamesCount,
           recentAchievementsCount,
@@ -77,8 +78,8 @@ export function registerUserTools(server: McpServer): void {
       },
     },
     async ({ username, recentMinutes }) =>
-      safeCall(() =>
-        getUserRecentAchievements(getAuth(), { username, recentMinutes })
+      safeCall(async () =>
+        getUserRecentAchievements(await getAuth(), { username, recentMinutes })
       )
   );
 
@@ -101,8 +102,8 @@ export function registerUserTools(server: McpServer): void {
       },
     },
     async ({ username, count, offset }) =>
-      safeCall(() =>
-        getUserRecentlyPlayedGames(getAuth(), { username, count, offset })
+      safeCall(async () =>
+        getUserRecentlyPlayedGames(await getAuth(), { username, count, offset })
       )
   );
 
@@ -119,8 +120,8 @@ export function registerUserTools(server: McpServer): void {
       },
     },
     async ({ username, count, offset }) =>
-      safeCall(() =>
-        getUserCompletionProgress(getAuth(), { username, count, offset })
+      safeCall(async () =>
+        getUserCompletionProgress(await getAuth(), { username, count, offset })
       )
   );
 
@@ -134,7 +135,8 @@ export function registerUserTools(server: McpServer): void {
         username: z.string().describe("RetroAchievements username"),
       },
     },
-    async ({ username }) => safeCall(() => getUserAwards(getAuth(), { username }))
+    async ({ username }) =>
+      safeCall(async () => getUserAwards(await getAuth(), { username }))
   );
 
   server.registerTool(
@@ -152,8 +154,8 @@ export function registerUserTools(server: McpServer): void {
       },
     },
     async ({ username, fromDate, toDate }) =>
-      safeCall(() =>
-        getAchievementsEarnedBetween(getAuth(), {
+      safeCall(async () =>
+        getAchievementsEarnedBetween(await getAuth(), {
           username,
           fromDate: new Date(fromDate),
           toDate: new Date(toDate),

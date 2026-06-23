@@ -32,23 +32,41 @@ npm run build
 
 ## First-time setup
 
-If you don't have a Web API key yet (or aren't sure where to find one), run:
+You have three ways to get the server credentials in place. Pick whichever fits.
+
+### 1. In-chat (the magic path)
+
+Just start asking your MCP client questions like "Show me my RetroAchievements
+profile." The first call will fail with a structured "credentials not configured"
+message that prompts the assistant to ask you for your Web API key. Paste it,
+and the assistant calls `ra_save_credentials`, which validates the key against
+the live API and writes it to your user config dir
+(`%APPDATA%\retroachievements-mcp\credentials.json` on Windows,
+`~/Library/Application Support/retroachievements-mcp/` on macOS,
+`$XDG_CONFIG_HOME/retroachievements-mcp/` on Linux). All future tool calls
+just work.
+
+The assistant can also call `ra_status` at any time to check whether setup is
+needed.
+
+> Note: pasting an API key into chat means it ends up in conversation history.
+> If you'd rather keep it out of the transcript, use option 2 or 3 below.
+
+### 2. Interactive CLI
 
 ```bash
 npm run setup
 ```
 
-The setup CLI will:
+Walks you through getting an account (if needed), prompts for your Web API key,
+verifies against the API, and saves to the same user config dir.
 
-1. Point you at the [sign-up page](https://retroachievements.org/createaccount.php)
-   if you don't have a RetroAchievements account.
-2. Ask for your username.
-3. Point you at the [control panel](https://retroachievements.org/controlpanel.php)
-   to copy your Web API key.
-4. Verify the credentials against the API.
-5. Write them to `.env` in the project root.
+### 3. Env vars in your MCP client config
 
-If you already have a key, you can skip the script and configure manually instead.
+Set `RA_USERNAME` and `RA_API_KEY` as `env` entries in your MCP client's server
+config (see [Use with Claude Code](#use-with-claude-code)). The server reads
+env vars first, then falls back to the stored file. Env vars never touch the
+chat history.
 
 ## Configure
 
@@ -107,6 +125,13 @@ Add to `claude_desktop_config.json`:
 ```
 
 ## Tools
+
+### Setup
+
+| Tool                    | Description                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `ra_status`             | Reports whether credentials are configured, what username is in use, and where the file lives.    |
+| `ra_save_credentials`   | Validates a username + Web API key against the live API, then persists them to the user config.  |
 
 ### User
 

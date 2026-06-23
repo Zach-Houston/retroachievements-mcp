@@ -15,7 +15,8 @@ export function registerGameTools(server: McpServer): void {
         gameId: z.number().int().positive().describe("RetroAchievements game ID"),
       },
     },
-    async ({ gameId }) => safeCall(() => getGame(getAuth(), { gameId }))
+    async ({ gameId }) =>
+      safeCall(async () => getGame(await getAuth(), { gameId }))
   );
 
   server.registerTool(
@@ -33,8 +34,11 @@ export function registerGameTools(server: McpServer): void {
       },
     },
     async ({ gameId, isRequestingUnofficialAchievements }) =>
-      safeCall(() =>
-        getGameExtended(getAuth(), { gameId, isRequestingUnofficialAchievements })
+      safeCall(async () =>
+        getGameExtended(await getAuth(), {
+          gameId,
+          isRequestingUnofficialAchievements,
+        })
       )
   );
 }
