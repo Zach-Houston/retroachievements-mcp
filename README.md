@@ -34,23 +34,31 @@ npm run build
 
 You have three ways to get the server credentials in place. Pick whichever fits.
 
-### 1. In-chat (the magic path)
-
 Just start asking your MCP client questions like "Show me my RetroAchievements
 profile." The first call will fail with a structured "credentials not configured"
-message that prompts the assistant to ask you for your Web API key. Paste it,
-and the assistant calls `ra_save_credentials`, which validates the key against
-the live API and writes it to your user config dir
-(`%APPDATA%\retroachievements-mcp\credentials.json` on Windows,
-`~/Library/Application Support/retroachievements-mcp/` on macOS,
-`$XDG_CONFIG_HOME/retroachievements-mcp/` on Linux). All future tool calls
-just work.
+message that gives the assistant two choices to offer you.
 
-The assistant can also call `ra_status` at any time to check whether setup is
-needed.
+### 1A. In-chat paste (fastest)
 
-> Note: pasting an API key into chat means it ends up in conversation history.
-> If you'd rather keep it out of the transcript, use option 2 or 3 below.
+You paste your username and Web API key into the chat. The assistant calls
+`ra_save_credentials`, which validates the key against the live API and saves
+it. **Downside:** the key is in your chat transcript.
+
+### 1B. Edit a file the assistant scaffolds (key never touches chat)
+
+The assistant calls `ra_prepare_credentials_file`, which writes a placeholder
+`credentials.env` in your user config dir and returns a `file://` link. You
+click the link, paste your key in the file, save. The server picks it up on
+the next tool call. **Upside:** key never appears in the transcript.
+
+Either way, credentials end up at:
+
+- Windows: `%APPDATA%\retroachievements-mcp\credentials.env`
+- macOS: `~/Library/Application Support/retroachievements-mcp/credentials.env`
+- Linux: `$XDG_CONFIG_HOME/retroachievements-mcp/credentials.env`
+
+The assistant can call `ra_status` at any time to see whether setup is done,
+half-done (placeholder file waiting for a key), or not started.
 
 ### 2. Interactive CLI
 
@@ -128,10 +136,11 @@ Add to `claude_desktop_config.json`:
 
 ### Setup
 
-| Tool                    | Description                                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------- |
-| `ra_status`             | Reports whether credentials are configured, what username is in use, and where the file lives.    |
-| `ra_save_credentials`   | Validates a username + Web API key against the live API, then persists them to the user config.  |
+| Tool                            | Description                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `ra_status`                     | Reports configured / source (env, file, file-pending, none) / username / file path.               |
+| `ra_save_credentials`           | In-chat flow: validates a username + key the user typed, then writes them to the user config.     |
+| `ra_prepare_credentials_file`   | Out-of-chat flow: writes a placeholder file the user opens locally, pastes their key, and saves.  |
 
 ### User
 
