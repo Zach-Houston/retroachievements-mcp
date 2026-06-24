@@ -8,6 +8,8 @@ import {
   getUserCompletionProgress,
   getUserAwards,
   getAchievementsEarnedBetween,
+  getUserWantToPlayList,
+  getUserCompletedGames,
 } from "@retroachievements/api";
 import { getAuth } from "../auth.js";
 import { safeCall } from "../util.js";
@@ -137,6 +139,38 @@ export function registerUserTools(server: McpServer): void {
     },
     async ({ username }) =>
       safeCall(async () => getUserAwards(await getAuth(), { username }))
+  );
+
+  server.registerTool(
+    "ra_user_want_to_play",
+    {
+      title: "Get user's want-to-play wishlist",
+      description:
+        "The user's saved want-to-play list. Useful for 'what should I play next?' recommendations.",
+      inputSchema: {
+        username: z.string().describe("RetroAchievements username"),
+        count: z.number().int().min(1).max(500).optional(),
+        offset: z.number().int().min(0).optional(),
+      },
+    },
+    async ({ username, count, offset }) =>
+      safeCall(async () =>
+        getUserWantToPlayList(await getAuth(), { username, count, offset })
+      )
+  );
+
+  server.registerTool(
+    "ra_user_completed_games",
+    {
+      title: "Get user's completed/mastered games",
+      description:
+        "All games where the user has earned every achievement (or every hardcore one). Each game appears twice if both softcore and hardcore completed.",
+      inputSchema: {
+        username: z.string().describe("RetroAchievements username"),
+      },
+    },
+    async ({ username }) =>
+      safeCall(async () => getUserCompletedGames(await getAuth(), { username }))
   );
 
   server.registerTool(

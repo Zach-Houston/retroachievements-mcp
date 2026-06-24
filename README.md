@@ -154,14 +154,37 @@ Add to `claude_desktop_config.json`:
 | `ra_user_recently_played_games`   | Recently played games with progress.                                 |
 | `ra_user_completion_progress`     | All started games with completion %, hardcore status, award level.   |
 | `ra_user_awards`                  | Site awards earned (mastery, beaten, events).                        |
+| `ra_user_want_to_play`            | The user's want-to-play wishlist.                                    |
+| `ra_user_completed_games`         | Games the user has fully mastered (softcore and/or hardcore).        |
 | `ra_user_achievements_between`    | Achievements earned between two ISO dates.                           |
 
 ### Game
 
-| Tool                | Description                                                          |
-| ------------------- | -------------------------------------------------------------------- |
-| `ra_game`           | Basic game metadata (title, console, developer, box art).            |
-| `ra_game_extended`  | Full game info with the achievement list and unlock counts.          |
+| Tool                      | Description                                                          |
+| ------------------------- | -------------------------------------------------------------------- |
+| `ra_game`                 | Basic game metadata (title, console, developer, box art).            |
+| `ra_game_extended`        | Full game info with the achievement list and unlock counts.          |
+| `ra_game_rank_and_score`  | High-score holders OR latest masters for a game (pick via `type`).   |
+
+### Console
+
+| Tool             | Description                                                                       |
+| ---------------- | --------------------------------------------------------------------------------- |
+| `ra_console_ids` | All consoles RA tracks. Use to translate names like "SNES" to a consoleId.        |
+| `ra_game_list`   | All games on a console, optionally filtered to those with achievement sets.       |
+
+### Achievement
+
+| Tool                      | Description                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| `ra_achievement_unlocks`  | Users who have unlocked a specific achievement, with timestamps and totals.            |
+
+### Leaderboard
+
+| Tool                          | Description                                                                |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| `ra_leaderboard_entries`      | Top entries for a leaderboard.                                             |
+| `ra_user_game_leaderboards`   | All leaderboards a user has placed on for a given game.                    |
 
 ### Feed
 
@@ -170,8 +193,8 @@ Add to `claude_desktop_config.json`:
 | `ra_achievement_of_the_week`  | Currently featured achievement-of-the-week + leaderboard. |
 | `ra_top_ten_users`            | Site's top-ten ranked users by hardcore points.          |
 
-More tools (leaderboards, console game lists, comments, tickets, claims, hashes,
-distribution) are planned — see `src/tools/` to add your own.
+More are easy to add (comments, tickets, claims, hashes, achievement
+distribution, points/progress, follows) — see `src/tools/` for the pattern.
 
 ## Develop
 

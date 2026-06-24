@@ -1,6 +1,10 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getGame, getGameExtended } from "@retroachievements/api";
+import {
+  getGame,
+  getGameExtended,
+  getGameRankAndScore,
+} from "@retroachievements/api";
 import { getAuth } from "../auth.js";
 import { safeCall } from "../util.js";
 
@@ -39,6 +43,27 @@ export function registerGameTools(server: McpServer): void {
           gameId,
           isRequestingUnofficialAchievements,
         })
+      )
+  );
+
+  server.registerTool(
+    "ra_game_rank_and_score",
+    {
+      title: "Get a game's high-score or latest-masters board",
+      description:
+        "Returns either the top high-score holders OR the most recent users to master the game, depending on the type parameter.",
+      inputSchema: {
+        gameId: z.number().int().positive().describe("Game ID"),
+        type: z
+          .enum(["latest-masters", "high-scores"])
+          .describe(
+            "'latest-masters' = recent masteries; 'high-scores' = top score earners."
+          ),
+      },
+    },
+    async ({ gameId, type }) =>
+      safeCall(async () =>
+        getGameRankAndScore(await getAuth(), { gameId, type })
       )
   );
 }

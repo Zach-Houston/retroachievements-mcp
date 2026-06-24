@@ -6,6 +6,9 @@ import { registerCredentialsTools } from "./tools/credentials.js";
 import { registerUserTools } from "./tools/user.js";
 import { registerGameTools } from "./tools/game.js";
 import { registerFeedTools } from "./tools/feed.js";
+import { registerConsoleTools } from "./tools/console.js";
+import { registerLeaderboardTools } from "./tools/leaderboard.js";
+import { registerAchievementTools } from "./tools/achievement.js";
 
 async function main(): Promise<void> {
   const server = new McpServer({
@@ -17,6 +20,9 @@ async function main(): Promise<void> {
   registerUserTools(server);
   registerGameTools(server);
   registerFeedTools(server);
+  registerConsoleTools(server);
+  registerLeaderboardTools(server);
+  registerAchievementTools(server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
