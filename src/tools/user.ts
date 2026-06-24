@@ -8,8 +8,14 @@ import {
   getUserCompletionProgress,
   getUserAwards,
   getAchievementsEarnedBetween,
+  getAchievementsEarnedOnDay,
   getUserWantToPlayList,
   getUserCompletedGames,
+  getGameInfoAndUserProgress,
+  getUserPoints,
+  getUserProgress,
+  getUsersIFollow,
+  getUsersFollowingMe,
 } from "@retroachievements/api";
 import { getAuth } from "../auth.js";
 import { safeCall } from "../util.js";
@@ -194,6 +200,119 @@ export function registerUserTools(server: McpServer): void {
           fromDate: new Date(fromDate),
           toDate: new Date(toDate),
         })
+      )
+  );
+
+  server.registerTool(
+    "ra_user_achievements_on_day",
+    {
+      title: "Get achievements earned on a specific day",
+      description:
+        "All achievements a user unlocked on a single calendar day. Use for 'what did I do yesterday' style queries.",
+      inputSchema: {
+        username: z.string().describe("RetroAchievements username"),
+        onDate: z.string().describe("ISO date (e.g. 2026-06-22)"),
+      },
+    },
+    async ({ username, onDate }) =>
+      safeCall(async () =>
+        getAchievementsEarnedOnDay(await getAuth(), {
+          username,
+          onDate: new Date(onDate),
+        })
+      )
+  );
+
+  server.registerTool(
+    "ra_user_points",
+    {
+      title: "Get a user's points (lightweight)",
+      description:
+        "Just the user's current hardcore and softcore point totals -- a cheap call when you only need the headline number.",
+      inputSchema: {
+        username: z.string().describe("RetroAchievements username"),
+      },
+    },
+    async ({ username }) =>
+      safeCall(async () => getUserPoints(await getAuth(), { username }))
+  );
+
+  server.registerTool(
+    "ra_user_progress",
+    {
+      title: "Get a user's progress on a list of games",
+      description:
+        "Per-game progress (numAwardedAchievements, numAwardedHardcoreAchievements, etc.) for an arbitrary list of game IDs. Faster than calling ra_game_info_and_user_progress per game.",
+      inputSchema: {
+        username: z.string().describe("RetroAchievements username"),
+        gameIds: z
+          .array(z.number().int().positive())
+          .min(1)
+          .describe("Game IDs to look up progress for"),
+      },
+    },
+    async ({ username, gameIds }) =>
+      safeCall(async () =>
+        getUserProgress(await getAuth(), { username, gameIds })
+      )
+  );
+
+  server.registerTool(
+    "ra_game_info_and_user_progress",
+    {
+      title: "Get game info plus a user's progress on it",
+      description:
+        "Game metadata and the achievement list combined with the user's specific unlock state for that game. Use this instead of ra_game_extended + ra_user_progress when you need both for a single game.",
+      inputSchema: {
+        gameId: z.number().int().positive().describe("Game ID"),
+        username: z.string().describe("RetroAchievements username"),
+        shouldIncludeHighestAwardMetadata: z
+          .boolean()
+          .optional()
+          .describe("Also include the user's highest award (mastery, beaten, etc.)"),
+      },
+    },
+    async ({ gameId, username, shouldIncludeHighestAwardMetadata }) =>
+      safeCall(async () =>
+        getGameInfoAndUserProgress(await getAuth(), {
+          gameId,
+          username,
+          shouldIncludeHighestAwardMetadata,
+        })
+      )
+  );
+
+  server.registerTool(
+    "ra_users_i_follow",
+    {
+      title: "Get accounts the authenticated user follows",
+      description:
+        "Returns the accounts followed by the credentialed user (NOT a target user). Username param is not supported by this endpoint.",
+      inputSchema: {
+        count: z.number().int().min(1).max(500).optional(),
+        offset: z.number().int().min(0).optional(),
+      },
+    },
+    async ({ count, offset }) =>
+      safeCall(async () =>
+        getUsersIFollow(await getAuth(), { count, offset })
+      )
+  );
+
+  server.registerTool(
+    "ra_users_following_me",
+    {
+      title: "Get accounts following the authenticated user",
+      description:
+        "Returns the accounts following the credentialed user (NOT a target user).",
+      inputSchema: {
+        count: z.number().int().min(1).max(500).optional(),
+        offset: z.number().int().min(0).optional(),
+      },
+    },
+    async ({ count, offset }) =>
+      safeCall(async () =>
+        getUsersFollowingMe(await getAuth(), { count, offset })
       )
   );
 }
