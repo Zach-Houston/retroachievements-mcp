@@ -85,12 +85,14 @@ The server reads two environment variables at startup:
 | `RA_USERNAME` | Your RetroAchievements username.                                     |
 | `RA_API_KEY`  | Your Web API key (find it at https://retroachievements.org/controlpanel.php). |
 
-A `.env.example` is included as a template — copy it to `.env` for local dev, or
-pass the values as `env` entries in your MCP client config (see below).
+Pass the values as `env` entries in your MCP client config (see below) — those
+take precedence over the stored credentials file.
 
-If you launch the server without these set, it will still start and respond
-to MCP clients — but every tool call returns a friendly error explaining how
-to finish setup. This means a missing key never silently bricks the connection.
+If you launch the server without env vars set and no stored credentials, it
+will still start and respond to MCP clients — but every tool call returns a
+friendly error pointing the assistant at `ra_save_credentials` /
+`ra_prepare_credentials_file`. A missing key never silently bricks the
+connection.
 
 ## Use with Claude Code
 
