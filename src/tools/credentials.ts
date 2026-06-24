@@ -112,9 +112,9 @@ export function registerCredentialsTools(server: McpServer): void {
     {
       title: "Scaffold a credentials file the user edits (out-of-chat flow)",
       description:
-        "Writes a placeholder credentials file to the user's config directory and returns a clickable file:// URL. " +
+        "Writes a placeholder credentials file to the user's config directory, then opens the user's file manager with the new file selected so they can double-click it. " +
         "Use this when the user prefers NOT to paste their API key into chat. " +
-        "After calling, tell the user: (1) open the linked file, (2) replace the placeholder after RA_API_KEY= with their real Web API Key, (3) save. " +
+        "After calling, tell the user: (1) the file manager should pop up with credentials.env selected, (2) open it in any text editor, (3) replace the placeholder after RA_API_KEY= with their real Web API Key, (4) save. " +
         "The server will pick up the values on the next ra_* call -- you can confirm by calling ra_status.",
       inputSchema: {
         username: z
@@ -123,11 +123,20 @@ export function registerCredentialsTools(server: McpServer): void {
           .describe(
             "Optional. If the user is willing to share their username in chat, prefill it here so they only need to paste the API key. Otherwise omit and they'll fill it in the file too."
           ),
+        revealInFileManager: z
+          .boolean()
+          .optional()
+          .describe(
+            "Default true. When true, the server pops the OS file manager open at the new file (Explorer on Windows, Finder on macOS, xdg-open on Linux). Pass false to suppress."
+          ),
       },
     },
-    async ({ username }) => {
+    async ({ username, revealInFileManager }) => {
       try {
-        const result = await prepareCredentialsFile({ username });
+        const result = await prepareCredentialsFile({
+          username,
+          reveal: revealInFileManager,
+        });
 
         if (result.alreadyConfigured) {
           return jsonResult({
@@ -144,17 +153,22 @@ export function registerCredentialsTools(server: McpServer): void {
           path: result.path,
           fileUrl: result.fileUrl,
           directoryUrl: credentialsDirUrl(),
+          revealedInFileManager: result.revealedInFileManager,
           instructions: [
-            `Open the file: ${result.fileUrl}`,
+            result.revealedInFileManager
+              ? "A file manager window should have opened with credentials.env selected. Open it in any text editor (Notepad, VS Code, etc.)."
+              : `Open this file in any text editor: ${result.path}`,
             `Get your Web API Key from: ${API_KEY_URL}`,
             "In the file, replace the placeholder after RA_API_KEY= with your real key.",
             result.created || !username
               ? "Also confirm the RA_USERNAME line shows your real username."
               : `Your username (${username}) has been prefilled -- just paste the API key.`,
-            "Save the file. The next ra_* tool call will use it automatically.",
+            "Save the file. If you used Notepad, make sure the saved name is credentials.env (no .txt suffix). The next ra_* tool call will use it automatically.",
           ],
           tellTheUser:
-            "I created a credentials file on your machine. Open the file:// link, paste your Web API Key where indicated, save it, and we're done. Nothing sensitive goes through chat.",
+            result.revealedInFileManager
+              ? "I created a credentials file and opened your file manager pointing at it. Double-click to edit, paste your Web API Key where the placeholder is, save (watch out for Notepad adding .txt), and we're done. Nothing sensitive goes through chat."
+              : "I created a credentials file on your machine. Open it in your editor, paste your Web API Key where the placeholder is, save, and we're done. Nothing sensitive goes through chat.",
         });
       } catch (err) {
         return errorResult(err);

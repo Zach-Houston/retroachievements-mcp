@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile, chmod, access } from "node:fs/promises";
 import { constants } from "node:fs";
+import { spawn } from "node:child_process";
 import { homedir, platform } from "node:os";
 import { dirname, join, sep } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -91,10 +92,12 @@ export interface PreparedFile {
   directoryUrl: string;
   created: boolean;
   alreadyConfigured: boolean;
+  revealedInFileManager: boolean;
 }
 
 export async function prepareCredentialsFile(opts?: {
   username?: string;
+  reveal?: boolean;
 }): Promise<PreparedFile> {
   const path = credentialsPath();
   const existed = await fileExists(path);
@@ -108,6 +111,7 @@ export async function prepareCredentialsFile(opts?: {
         directoryUrl: credentialsDirUrl(),
         created: false,
         alreadyConfigured: true,
+        revealedInFileManager: false,
       };
     }
   }
@@ -120,6 +124,10 @@ export async function prepareCredentialsFile(opts?: {
     "# Paste your Web API Key after RA_API_KEY=",
     "# Get one at https://retroachievements.org/controlpanel.php",
     "# Save the file when done -- the server picks it up on the next call.",
+    "#",
+    "# IMPORTANT (Windows): if you used Notepad, make sure the saved",
+    "# file is credentials.env, not credentials.env.txt. Notepad hides",
+    "# extensions by default and may add .txt silently.",
     "",
     `${USERNAME_KEY}=${username}`,
     `${API_KEY_KEY}=${PLACEHOLDER_API_KEY}`,
@@ -129,13 +137,41 @@ export async function prepareCredentialsFile(opts?: {
   await writeFile(path, body, "utf8");
   await tighten(path);
 
+  const reveal = opts?.reveal ?? true;
+  const revealed = reveal ? revealInFileManager(path) : false;
+
   return {
     path,
     fileUrl: credentialsFileUrl(),
     directoryUrl: credentialsDirUrl(),
     created: !existed,
     alreadyConfigured: false,
+    revealedInFileManager: revealed,
   };
+}
+
+function revealInFileManager(path: string): boolean {
+  try {
+    const plat = platform();
+    if (plat === "win32") {
+      spawn("explorer.exe", [`/select,${path}`], {
+        detached: true,
+        stdio: "ignore",
+      }).unref();
+      return true;
+    }
+    if (plat === "darwin") {
+      spawn("open", ["-R", path], { detached: true, stdio: "ignore" }).unref();
+      return true;
+    }
+    spawn("xdg-open", [dirname(path)], {
+      detached: true,
+      stdio: "ignore",
+    }).unref();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function readEnvFile(path: string): Promise<Map<string, string> | null> {
@@ -147,13 +183,17 @@ async function readEnvFile(path: string): Promise<Map<string, string> | null> {
     throw err;
   }
 
+  if (raw.charCodeAt(0) === 0xfeff) {
+    raw = raw.slice(1);
+  }
+
   const out = new Map<string, string>();
   for (const line of raw.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("#")) continue;
     const match = trimmed.match(/^([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/);
     if (!match) continue;
-    let value = match[2];
+    let value = match[2].trim();
     if (
       (value.startsWith('"') && value.endsWith('"')) ||
       (value.startsWith("'") && value.endsWith("'"))
